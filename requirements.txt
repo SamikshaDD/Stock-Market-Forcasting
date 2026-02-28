@@ -1,0 +1,11 @@
+streamlit
+pandas
+yfinance
+ta
+plotly
+tensorflow
+numpy
+scikit-learn
+alpha_vantage
+finvizfinance
+tradingview_ta
