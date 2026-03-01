@@ -57,15 +57,27 @@ if st.sidebar.button('Send'):
 
 
 df = download_df(Stock, start_date, end_date)
-
+if df is None or df.empty:
+    st.error("No data found for this stock symbol or date range.")
+    st.stop()
 
 def tech_indicators():
     st.header('Technical Indicators')
     Stock = st.radio('Choose a Technical Indicator to Visualize', ['Chart', 'BB', 'SMA', 'EMA'])
 
     # Bollinger bands
-    bb_indicator = BollingerBands(df.Close)
-    bb = df.copy()
+    if df is None or df.empty:
+        st.error("Stock data not available.")
+    return
+    
+    df_clean = df.dropna()
+    
+    if df_clean.empty:
+        st.error("Not enough data to calculate indicators.")
+    return
+    
+    bb_indicator = BollingerBands(close=df_clean["Close"])
+    bb = df_clean.copy()
     bb['bb_h'] = bb_indicator.bollinger_hband()
     bb['bb_l'] = bb_indicator.bollinger_lband()
     # Creating a new dfframe
@@ -328,8 +340,8 @@ def LSTM_ALGO(df):
     from keras.models import load_model
     import math
 
-    load_existing_model = True  # Define the variable load_existing_model
-    save_model = True  # Define the variable save_model
+    load_existing_model = False  # Define the variable load_existing_model
+    save_model = False  # Define the variable save_model
 
     if load_existing_model and os.path.exists(str (Stock) + "lstm_model.h5"):
         regressor = load_model( str (Stock) + "lstm_model.h5")
@@ -346,7 +358,7 @@ def LSTM_ALGO(df):
         regressor.add(Dense(units=1))
         regressor.compile(optimizer='adam', loss='mean_squared_error')
 
-        regressor.fit(X_train, y_train, epochs=512, batch_size=8)
+        regressor.fit(X_train, y_train, epochs=10, batch_size=8)
 
         if save_model:
             regressor.save(str (Stock) + "lstm_model.h5")
